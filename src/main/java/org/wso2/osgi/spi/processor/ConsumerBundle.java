@@ -47,7 +47,7 @@ public class ConsumerBundle {
 
     public boolean isVisible(String className) {
 
-        if(!isVisibilityRestricted){
+        if (!isVisibilityRestricted) {
             return true;
         }
 
@@ -68,5 +68,11 @@ public class ConsumerBundle {
         return false;
     }
 
+    public boolean isSingleCardinality(String className) {
+        return false; // TODO: 2/7/16 cardinalty fix
+    }
 
+    public boolean isVisibilityRestricted() {
+        return isVisibilityRestricted;
+    }
 }

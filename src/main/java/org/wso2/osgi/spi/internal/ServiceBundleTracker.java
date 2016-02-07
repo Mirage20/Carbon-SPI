@@ -163,6 +163,33 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         return null;
     }
 
+    public List<ProviderBundle> getMatchingProviders(String requestingServiceType, ConsumerBundle consumerBundle) {
+
+        List<ProviderBundle> selectedProviders = new ArrayList<>();
+
+        if (consumerBundle.isVisibilityRestricted()) {
+
+            if (consumerBundle.isVisible(requestingServiceType)) {
+
+                for (ProviderBundle provider : providers) {
+                    if (provider.hasServiceType(requestingServiceType)) {
+                        selectedProviders.add(provider);
+
+                        if(consumerBundle.isSingleCardinality(requestingServiceType)){
+                            break;
+                        }
+                    }
+                }
+
+            } else {
+                // TODO: 2/7/16 check spec to find what to do
+            }
+
+        } else {
+            selectedProviders.addAll(providers);
+        }
+        return selectedProviders;
+    }
 
 
 }

@@ -6,9 +6,9 @@
  * to you under the Apache License, Version 2.0 (the
  * "License"); you may not use this file except in compliance
  * with the License.  You may obtain a copy of the License at
- *
- *   http://www.apache.org/licenses/LICENSE-2.0
- *
+ * <p>
+ * http://www.apache.org/licenses/LICENSE-2.0
+ * <p>
  * Unless required by applicable law or agreed to in writing,
  * software distributed under the License is distributed on an
  * "AS IS" BASIS, WITHOUT WARRANTIES OR CONDITIONS OF ANY
@@ -21,6 +21,7 @@ package org.wso2.osgi.spi.processor;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleReference;
 import org.osgi.framework.wiring.BundleWiring;
+import org.wso2.osgi.spi.internal.ServiceBundleTracker;
 import org.wso2.osgi.spi.registrar.ProviderBundle;
 import org.wso2.osgi.spi.internal.ServiceLoaderActivator;
 
@@ -35,7 +36,8 @@ import java.util.List;
  * The methods are static to make it easy to access them from generated code.
  */
 public class DynamicInject {
-    static ThreadLocal<ClassLoader> storedClassLoaders = new ThreadLocal<ClassLoader>();
+
+    static ThreadLocal<ClassLoader> storedClassLoaders = new ThreadLocal<>();
 
     // Provided as static method to make it easier to call from ASM-modified code
     public static void storeContextClassloader() {
@@ -59,20 +61,20 @@ public class DynamicInject {
         });
     }
 
-    public static void fixContextClassloader(Class<?> clsArg, ClassLoader bundleLoader) {
+    public static void fixContextClassloader(Class<?> serviceType, ClassLoader consumerBundleLoader) {
 //        if (BaseActivator.activator == null) {
 //            // The system is not yet initialized. We can't do anything.
 //            return;
 //        }
 
-        if (!(bundleLoader instanceof BundleReference)) {
-//            BaseActivator.activator.log(LogService.LOG_WARNING, "Classloader of consuming bundle doesn't implement BundleReference: " + bundleLoader);
+        if (!(consumerBundleLoader instanceof BundleReference)) {
+//            BaseActivator.activator.log(LogService.LOG_WARNING, "Classloader of consuming bundle doesn't implement BundleReference: " + consumerBundleLoader);
             return;
         }
 
-        BundleReference br = ((BundleReference) bundleLoader);
+        BundleReference br = ((BundleReference) consumerBundleLoader);
 
-        final ClassLoader cl = findContextClassloader(br.getBundle(), null, null, clsArg);
+        final ClassLoader cl = findContextClassloader(br.getBundle(), serviceType);
         if (cl != null) {
 //            BaseActivator.activator.log(LogService.LOG_INFO, "Temporarily setting Thread Context Classloader to: " + cl);
             AccessController.doPrivileged(new PrivilegedAction<Void>() {
@@ -83,7 +85,29 @@ public class DynamicInject {
                 }
             });
         } else {
-//            BaseActivator.activator.log(LogService.LOG_WARNING, "No classloader found for " + cls + ":" + method + "(" + clsArg + ")");
+//            BaseActivator.activator.log(LogService.LOG_WARNING, "No classloader found for " + cls + ":" + method + "(" + serviceType + ")");
+        }
+    }
+
+    private static ClassLoader findContextClassloader(Bundle consumerBundle, Class<?> clsArg) {
+
+        ConsumerBundle cunsumer = ServiceLoaderActivator.getInstance().getServiceBundleTracker().getConsumer(consumerBundle);
+
+        ServiceBundleTracker s = ServiceLoaderActivator.getInstance().getServiceBundleTracker();
+
+        List<ProviderBundle> providerBundles = s.getMatchingProviders(clsArg.getName(), cunsumer);
+
+        if (providerBundles.size() == 0) {
+            return null;
+        } else if (providerBundles.size() == 1) {
+            return getProviderBundleClassLoader(providerBundles.get(0));
+        } else {
+            List<ClassLoader> loaders = new ArrayList<>();
+            for (ProviderBundle b : providerBundles) {
+                loaders.add(getProviderBundleClassLoader(b));
+            }
+            //return new MultiDelegationClassloader(loaders.toArray(new ClassLoader[loaders.size()]));
+            return null;
         }
     }
 
@@ -111,40 +135,41 @@ public class DynamicInject {
 //            requestedClass = className;
 //            args = null; // only supported on ServiceLoader.load() at the moment
 //        }
-
-        List<ProviderBundle> bundles = ServiceLoaderActivator.getInstance().getServiceBundleTracker().getProviders();
-//        activator.log(LogService.LOG_DEBUG, "Found bundles providing " + requestedClass + ": " + bundles);
-
-        Collection<Bundle> allowedBundles = null;
+//
+//        List<ProviderBundle> providerBundles = ServiceLoaderActivator.getInstance().getServiceBundleTracker().getProviders();
+////        activator.log(LogService.LOG_DEBUG, "Found providerBundles providing " + requestedClass + ": " + providerBundles);
+//
+//        Collection<Bundle> allowedBundles = null;
 
 //        if (allowedBundles != null) {
-//            for (Iterator<Bundle> it = bundles.iterator(); it.hasNext(); ) {
+//            for (Iterator<Bundle> it = providerBundles.iterator(); it.hasNext(); ) {
 //                if (!allowedBundles.contains(it.next())) {
 //                    it.remove();
 //                }
 //            }
 //        }
 
-        switch (bundles.size()) {
-        case 0:
-            return null;
-        case 1:
-            Bundle bundle = bundles.get(0).getProviderBundle();
-            return getBundleClassLoader(bundle);
-        default:
-            List<ClassLoader> loaders = new ArrayList<ClassLoader>();
-            for (ProviderBundle b : bundles) {
-                loaders.add(getBundleClassLoader(b.getProviderBundle()));
-            }
-            //return new MultiDelegationClassloader(loaders.toArray(new ClassLoader[loaders.size()]));
-            return null;
-        }
+//        switch (providerBundles.size()) {
+//            case 0:
+//                return null;
+//            case 1:
+//
+//                return getProviderBundleClassLoader(providerBundles.get(0));
+//            default:
+//                List<ClassLoader> loaders = new ArrayList<ClassLoader>();
+//                for (ProviderBundle b : providerBundles) {
+//                    loaders.add(getProviderBundleClassLoader(b));
+//                }
+//                //return new MultiDelegationClassloader(loaders.toArray(new ClassLoader[loaders.size()]));
+//                return null;
+//        }
+        return null;
     }
 
-    private static ClassLoader getBundleClassLoader(final Bundle b) {
+    private static ClassLoader getProviderBundleClassLoader(final ProviderBundle providerBundle) {
         return AccessController.doPrivileged(new PrivilegedAction<ClassLoader>() {
             public ClassLoader run() {
-                return b.adapt(BundleWiring.class).getClassLoader();
+                return providerBundle.getProviderBundle().adapt(BundleWiring.class).getClassLoader();
             }
         });
     }
