@@ -8,7 +8,6 @@ import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
-import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
 import org.wso2.osgi.spi.junk.Junk;
@@ -53,10 +52,10 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
             return;
         }
 
-        List<BundleWire> requiredWires = bundleWiring.getRequiredWires(Constants.EXTENDER_CAPABILITY_NAMESPACE);
+        List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
 
-        for (BundleWire requiredWire : requiredWires) {
-            BundleRequirement requirement = requiredWire.getRequirement();
+        for (BundleRequirement requirement : requirements) {
+
             try {
                 Filter filter = FrameworkUtil.createFilter(requirement.getDirectives().get(Constants.FILTER_DIRECTIVE));
 
@@ -81,10 +80,9 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
             return;
         }
 
-        List<BundleWire> providedWires = bundleWiring.getProvidedWires(Constants.SERVICELOADER_NAMESPACE);
+        List<BundleCapability> capabilities = bundleWiring.getCapabilities(Constants.SERVICELOADER_NAMESPACE);
 
-        for (BundleWire providedWire : providedWires) {
-            BundleCapability capability = providedWire.getCapability();
+        for (BundleCapability capability : capabilities) {
             if (capability.getAttributes().get(Constants.SERVICELOADER_NAMESPACE) != null) {
                 providers.add(new ProviderBundle(bundle));
                 isTracked = true;
@@ -105,13 +103,13 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
     public void modifiedBundle(Bundle bundle, BundleEvent event, T object) {
 
         super.modifiedBundle(bundle, event, object);
-        System.out.println("TrackerCustom Modified: " + bundle.getSymbolicName() + "Event: " + Junk.typeAsString(event));
+        System.out.println("TrackerCustom Modified: " + bundle.getSymbolicName() + " Event: " + Junk.typeAsString(event));
 
         if (this.isProvider(bundle)) {
             ProviderBundle providerBundle = this.getProvider(bundle);
-            if (providerBundle.requireRegistrar() && event.getType() == BundleEvent.STARTING) {
+            if (event.getType() == BundleEvent.STARTING && providerBundle.requireRegistrar()) {
                 providerBundle.registerServices();
-            } else if (providerBundle.requireRegistrar() && event.getType() == BundleEvent.STOPPING) {
+            } else if (event.getType() == BundleEvent.STOPPING && providerBundle.requireRegistrar()) {
                 providerBundle.unregisterServices();
             }
         }

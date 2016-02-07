@@ -7,7 +7,6 @@ import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
-import org.osgi.framework.wiring.BundleWire;
 import org.osgi.framework.wiring.BundleWiring;
 import org.wso2.osgi.spi.internal.Constants;
 
@@ -50,9 +49,8 @@ public class ProviderBundle {
             return;
         }
 
-        List<BundleWire> providedWires = bundleWiring.getProvidedWires(Constants.SERVICELOADER_NAMESPACE);
-        for (BundleWire providedWire : providedWires) {
-            BundleCapability capability = providedWire.getCapability();
+        List<BundleCapability> capabilities = bundleWiring.getCapabilities(Constants.SERVICELOADER_NAMESPACE);
+        for (BundleCapability capability : capabilities) {
             serviceCapabilities.add(capability);
         }
 
@@ -60,14 +58,11 @@ public class ProviderBundle {
 
     public boolean hasServiceType(String className) {
 
-
         for (BundleCapability serviceCapability : serviceCapabilities) {
-
             String serviceTypeName = serviceCapability.getAttributes().get(Constants.SERVICELOADER_NAMESPACE).toString();
             if (serviceTypeName.equals(className)) {
                 return true;
             }
-
         }
         return false;
     }
@@ -79,9 +74,8 @@ public class ProviderBundle {
             return false;
         }
 
-        List<BundleWire> requiredWires = bundleWiring.getRequiredWires(Constants.EXTENDER_CAPABILITY_NAMESPACE);
-        for (BundleWire requiredWire : requiredWires) {
-            BundleRequirement requirement = requiredWire.getRequirement();
+        List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
+        for (BundleRequirement requirement : requirements) {
             try {
                 Filter filter = FrameworkUtil.createFilter(requirement.getDirectives().get(Constants.FILTER_DIRECTIVE));
                 Dictionary<String, String> lookupRegistrar = new Hashtable<>();
