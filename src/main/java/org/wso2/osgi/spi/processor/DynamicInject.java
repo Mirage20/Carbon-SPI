@@ -103,11 +103,10 @@ public class DynamicInject {
             return getProviderBundleClassLoader(providerBundles.get(0));
         } else {
             List<ClassLoader> loaders = new ArrayList<>();
-            for (ProviderBundle b : providerBundles) {
-                loaders.add(getProviderBundleClassLoader(b));
+            for (ProviderBundle providerBundle : providerBundles) {
+                loaders.add(getProviderBundleClassLoader(providerBundle));
             }
-            //return new MultiDelegationClassloader(loaders.toArray(new ClassLoader[loaders.size()]));
-            return null;
+            return new CombinedClassLoader(loaders);
         }
     }
 
