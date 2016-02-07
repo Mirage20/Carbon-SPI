@@ -9,6 +9,7 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
 import org.wso2.osgi.spi.internal.Constants;
+import org.wso2.osgi.spi.internal.ServiceLoaderActivator;
 
 import java.io.BufferedReader;
 import java.io.IOException;
@@ -136,30 +137,31 @@ public class ProviderBundle {
             }
 
             List<String> serviceProviders = services.get(serviceType);
+            final Hashtable<String,?> serviceProperties = this.getServiceProperties(serviceCapability);
 
             if (serviceCapability.getAttributes().containsKey(Constants.CAPABILITY_REGISTER_DIRECTIVE)) {
                 String serviceProvider = serviceCapability.getAttributes().get(Constants.CAPABILITY_REGISTER_DIRECTIVE).toString();
 
                 if (serviceProviders.contains(serviceProvider)) {
-                    this.registerServiceProvider(serviceType, serviceProvider);
+                    this.registerServiceProvider(serviceType, serviceProvider,serviceProperties);
                 } else {
                     // TODO: 2/6/16 throw exception meta inf file invalid
                 }
 
             } else {
                 for (String serviceProvider : serviceProviders) {
-                    this.registerServiceProvider(serviceType, serviceProvider);
+                    this.registerServiceProvider(serviceType, serviceProvider,serviceProperties);
                 }
             }
         }
     }
 
-    private void registerServiceProvider(String serviceType, String serviceProvider) {
+    private void registerServiceProvider(String serviceType, String serviceProvider, Hashtable<String,?> properties) {
         try {
             Class<?> clazz = providerBundle.loadClass(serviceProvider);
             ServiceRegistration registration = providerBundle.getBundleContext()
                     // TODO: 2/6/16 register mediator serivce propety insted of null
-                    .registerService(serviceType, new ServiceProviderFactory<>(clazz), null);
+                    .registerService(serviceType, new ServiceProviderFactory<>(clazz), properties);
             serviceRegistrations.add(registration);
         } catch (ClassNotFoundException e) {
             e.printStackTrace();
@@ -171,6 +173,23 @@ public class ProviderBundle {
         for (ServiceRegistration registration : serviceRegistrations) {
             registration.unregister();
         }
+    }
+
+    private Hashtable<String,?> getServiceProperties(BundleCapability serviceCapability){
+
+        Hashtable<String,Object> serviceProperties = new Hashtable<>();
+        serviceProperties.put(Constants.SERVICELOADER_MEDIATOR_PROPERTY, ServiceLoaderActivator.getInstance().getBundleId());
+
+        Map<String ,Object> capabilityAttributes = serviceCapability.getAttributes();
+
+        for(Map.Entry<String, Object> attribute : capabilityAttributes.entrySet()) {
+            String key = attribute.getKey();
+            if(key.startsWith(".") || key.equals(Constants.SERVICELOADER_NAMESPACE)){
+                continue;
+            }
+            serviceProperties.put(key,attribute.getValue());
+        }
+        return serviceProperties;
     }
 
 

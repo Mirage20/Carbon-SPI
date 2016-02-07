@@ -13,11 +13,14 @@ public class ServiceLoaderActivator implements BundleActivator {
 
     private ServiceBundleTracker serviceBundleTracker = null;
     private ServiceRegistration weavingHookService = null;
+    private long bundleId;
 
     public void start(BundleContext context) throws Exception {
 
         System.out.println("Bundle Activator Start");
         instance = this;
+        bundleId = context.getBundle().getBundleId();
+
         int trackStates = Bundle.STARTING | Bundle.STOPPING | Bundle.RESOLVED | Bundle.INSTALLED | Bundle.UNINSTALLED |Bundle.ACTIVE;
         serviceBundleTracker = new ServiceBundleTracker(context, trackStates);
         serviceBundleTracker.open();
@@ -40,5 +43,9 @@ public class ServiceLoaderActivator implements BundleActivator {
 
     public ServiceBundleTracker getServiceBundleTracker() {
         return serviceBundleTracker;
+    }
+
+    public long getBundleId() {
+        return bundleId;
     }
 }

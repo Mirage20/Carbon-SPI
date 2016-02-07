@@ -17,7 +17,7 @@ public class Constants {
     public static final String CAPABILITY_REGISTER_DIRECTIVE = "register";
 
     // Service registration property
-    String SERVICELOADER_MEDIATOR_PROPERTY = "serviceloader.mediator";
+    public static final String SERVICELOADER_MEDIATOR_PROPERTY = "serviceloader.mediator";
     String PROVIDER_IMPLCLASS_PROPERTY = ".org.apache.aries.spifly.provider.implclass";
 
     // The names of the extenders involved
