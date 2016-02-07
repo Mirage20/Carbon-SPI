@@ -2,6 +2,8 @@ package org.wso2.osgi.spi.junk;
 
 import org.osgi.framework.BundleEvent;
 
+// TODO: 2/7/16 add osgi specific namespace contents
+// TODO: 2/7/16 add security validations
 public class Junk {
     public static String typeAsString(BundleEvent event) {
         if (event == null) {

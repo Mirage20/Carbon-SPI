@@ -5,6 +5,7 @@ import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.hooks.weaving.WeavingHook;
+import org.osgi.util.tracker.BundleTracker;
 import org.wso2.osgi.spi.processor.ConsumerProcessor;
 
 public class ServiceLoaderActivator implements BundleActivator {
@@ -24,6 +25,7 @@ public class ServiceLoaderActivator implements BundleActivator {
         int trackStates = Bundle.STARTING | Bundle.STOPPING | Bundle.RESOLVED | Bundle.INSTALLED | Bundle.UNINSTALLED |Bundle.ACTIVE;
         serviceBundleTracker = new ServiceBundleTracker(context, trackStates);
         serviceBundleTracker.open();
+        BundleTracker b;
 
         ConsumerProcessor consumerProcessor = new ConsumerProcessor();
         weavingHookService = context.registerService(WeavingHook.class, consumerProcessor, null);

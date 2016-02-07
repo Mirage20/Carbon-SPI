@@ -192,5 +192,7 @@ public class ProviderBundle {
         return serviceProperties;
     }
 
-
+    public List<BundleCapability> getServiceCapabilities() {
+        return serviceCapabilities;
+    }
 }

@@ -37,7 +37,7 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         findProviders(bundle);
 
         if (isTracked) {
-            System.out.println("TrackerCustom Added: " + bundle.getSymbolicName() + "Event: " + Junk.typeAsString(event));
+            System.out.println("TrackerCustom Added: " + bundle.getSymbolicName() + " Event: " + Junk.typeAsString(event));
             return super.addingBundle(bundle, event);
         }
 
@@ -119,7 +119,7 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
     @Override
     public void removedBundle(Bundle bundle, BundleEvent event, T object) {
         super.removedBundle(bundle, event, object);
-        System.out.println("Tracker Custom Remove: " + bundle.getSymbolicName() + "Event: " + Junk.typeAsString(event));
+        System.out.println("Tracker Custom Remove: " + bundle.getSymbolicName() + " Event: " + Junk.typeAsString(event));
 
     }
 
@@ -158,6 +158,8 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
                 return providerBundle;
             }
         }
+        BundleTracker b;
+
         return null;
     }
 
@@ -167,25 +169,27 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
         if (consumerBundle.isVisibilityRestricted()) {
 
-            if (consumerBundle.isVisible(requestingServiceType)) {
+            List<BundleRequirement> consumerRequirements = consumerBundle.getVisibilityRequirements();
 
-                for (ProviderBundle provider : providers) {
-                    if (provider.hasServiceType(requestingServiceType)) {
-                        selectedProviders.add(provider);
+            for (BundleRequirement consumerRequirement : consumerRequirements) {
 
-                        if(consumerBundle.isSingleCardinality(requestingServiceType)){
-                            break;
+                for (ProviderBundle providerBundle : providers) {
+                    List<BundleCapability> providerCapabilities = providerBundle.getServiceCapabilities();
+
+                    for (BundleCapability providerCapability : providerCapabilities) {
+
+                        if (consumerRequirement.matches(providerCapability) && !selectedProviders.contains(providerBundle)) {
+                            selectedProviders.add(providerBundle);
                         }
                     }
                 }
 
-            } else {
-                // TODO: 2/7/16 check spec to find what to do
             }
-
         } else {
             selectedProviders.addAll(providers);
         }
+
+
         return selectedProviders;
     }
 

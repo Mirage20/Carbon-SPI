@@ -36,10 +36,9 @@ public class ConsumerBundle {
         if (bundleWiring == null) {
             return;
         }
-        List<BundleWire> requiredWires = bundleWiring.getRequiredWires(Constants.SERVICELOADER_NAMESPACE);
-        for (BundleWire requiredWire : requiredWires) {
-            BundleRequirement requirement = requiredWire.getRequirement();
-            visibilityRequirements.add(requirement);
+        visibilityRequirements = bundleWiring.getRequirements(Constants.SERVICELOADER_NAMESPACE);
+
+        if (visibilityRequirements != null && !visibilityRequirements.isEmpty()) {
             isVisibilityRestricted = true;
         }
 
@@ -74,5 +73,9 @@ public class ConsumerBundle {
 
     public boolean isVisibilityRestricted() {
         return isVisibilityRestricted;
+    }
+
+    public List<BundleRequirement> getVisibilityRequirements() {
+        return visibilityRequirements;
     }
 }
