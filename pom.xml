@@ -45,7 +45,13 @@
                         <!--</Private-Package>-->
                         <!--<Embed-Dependency>org.wso2.osgi.spi.*;scope=compile;inline=true</Embed-Dependency>-->
                         <Provide-Capability>
-                            osgi.extender;osgi.extender=osgi.serviceloader.registrar;version:Version=1.0,osgi.extender;osgi.extender=osgi.serviceloader.processor;version:Version=1.0
+                            osgi.extender;
+                            osgi.extender=osgi.serviceloader.registrar;
+                            version:Version=1.0,
+
+                            osgi.extender;
+                            osgi.extender=osgi.serviceloader.processor;
+                            version:Version=1.0
                         </Provide-Capability>
                         <!--<Bundle-Name>ABC-wso2-spi</Bundle-Name>-->
                         <Bundle-SymbolicName>ABC-LOL</Bundle-SymbolicName>

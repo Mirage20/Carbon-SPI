@@ -78,4 +78,21 @@ public class ConsumerBundle {
     public List<BundleRequirement> getVisibilityRequirements() {
         return visibilityRequirements;
     }
+
+    public List<Bundle> getVisibleBundles(){
+        BundleWiring bundleWiring = consumerBundle.adapt(BundleWiring.class);
+        List<BundleWire> requiredWires = bundleWiring.getRequiredWires(Constants.SERVICELOADER_NAMESPACE);
+
+        List<Bundle> visibleBundles = new ArrayList<>();
+
+        for(BundleWire requiredWire : requiredWires){
+            Bundle visibleBundle = requiredWire.getProvider().getBundle();
+            if(!visibleBundles.contains(visibleBundle)) {
+                visibleBundles.add(requiredWire.getProvider().getBundle());
+            }
+        }
+
+        return visibleBundles;
+
+    }
 }

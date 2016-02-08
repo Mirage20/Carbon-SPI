@@ -13,6 +13,7 @@ import org.osgi.util.tracker.BundleTracker;
 import org.wso2.osgi.spi.junk.Junk;
 import org.wso2.osgi.spi.processor.ConsumerBundle;
 import org.wso2.osgi.spi.registrar.ProviderBundle;
+import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
 import java.util.ArrayList;
 import java.util.Dictionary;
@@ -23,10 +24,38 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
     private List<ConsumerBundle> consumers = new ArrayList<>();
     private List<ProviderBundle> providers = new ArrayList<>();
+
+    private final BundleCapability mediatorProcessorCapability;
+    private final BundleCapability mediatorRegistrarCapability;
     private boolean isTracked = false;
 
     public ServiceBundleTracker(BundleContext context, int stateMask) {
+
         super(context, stateMask, null);
+        BundleWiring mediatorBundleWiring = context.getBundle().adapt(BundleWiring.class);
+
+        List<BundleCapability> mediatorCapabilities = mediatorBundleWiring.
+                getCapabilities(Constants.EXTENDER_CAPABILITY_NAMESPACE);
+
+        BundleCapability processorCapability = null;
+        BundleCapability registrarCapability = null;
+
+        for (BundleCapability mediatorCapability : mediatorCapabilities) {
+
+            if (mediatorCapability.getAttributes().containsKey(Constants.EXTENDER_CAPABILITY_NAMESPACE)) {
+                String extenderCapabilityType = mediatorCapability.getAttributes()
+                        .get(Constants.EXTENDER_CAPABILITY_NAMESPACE).toString();
+
+                if (extenderCapabilityType.equals(Constants.PROCESSOR_EXTENDER_NAME)) {
+                    processorCapability = mediatorCapability;
+                } else if (extenderCapabilityType.equals(Constants.REGISTRAR_EXTENDER_NAME)) {
+                    registrarCapability = mediatorCapability;
+                }
+            }
+        }
+        // TODO: 2/8/16 throw runtime exception if null capability found
+        this.mediatorProcessorCapability = processorCapability;
+        this.mediatorRegistrarCapability = registrarCapability;
     }
 
     @Override
@@ -55,20 +84,10 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
 
         for (BundleRequirement requirement : requirements) {
-
-            try {
-                Filter filter = FrameworkUtil.createFilter(requirement.getDirectives().get(Constants.FILTER_DIRECTIVE));
-
-                Dictionary<String, String> lookupConsumer = new Hashtable<>();
-                lookupConsumer.put(Constants.EXTENDER_CAPABILITY_NAMESPACE, Constants.PROCESSOR_EXTENDER_NAME);
-                if (filter.matchCase(lookupConsumer)) {
-                    consumers.add(new ConsumerBundle(bundle));
-                    isTracked = true;
-                    break;
-                }
-
-            } catch (InvalidSyntaxException e) {
-                e.printStackTrace();
+            if (requirement.matches(mediatorProcessorCapability)) {
+                consumers.add(new ConsumerBundle(bundle));
+                isTracked = true;
+                break;
             }
         }
     }
@@ -82,21 +101,10 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
         List<BundleCapability> capabilities = bundleWiring.getCapabilities(Constants.SERVICELOADER_NAMESPACE);
 
-        for (BundleCapability capability : capabilities) {
-            if (capability.getAttributes().get(Constants.SERVICELOADER_NAMESPACE) != null) {
-                providers.add(new ProviderBundle(bundle));
-                isTracked = true;
-                break;
-            }
+        if (!capabilities.isEmpty()) {
+            providers.add(new ProviderBundle(bundle));
+            isTracked = true;
         }
-    }
-
-    public List<ConsumerBundle> getConsumers() {
-        return consumers;
-    }
-
-    public List<ProviderBundle> getProviders() {
-        return providers;
     }
 
     @Override
@@ -108,9 +116,9 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         if (this.isProvider(bundle)) {
             ProviderBundle providerBundle = this.getProvider(bundle);
             if (event.getType() == BundleEvent.STARTING && providerBundle.requireRegistrar()) {
-                providerBundle.registerServices();
+                ServiceRegistrar.register(providerBundle);
             } else if (event.getType() == BundleEvent.STOPPING && providerBundle.requireRegistrar()) {
-                providerBundle.unregisterServices();
+                ServiceRegistrar.unregister(providerBundle);
             }
         }
 
@@ -158,8 +166,6 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
                 return providerBundle;
             }
         }
-        BundleTracker b;
-
         return null;
     }
 
@@ -169,22 +175,14 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
         if (consumerBundle.isVisibilityRestricted()) {
 
-            List<BundleRequirement> consumerRequirements = consumerBundle.getVisibilityRequirements();
+            List<Bundle> visibleBundles = consumerBundle.getVisibleBundles();
 
-            for (BundleRequirement consumerRequirement : consumerRequirements) {
-
-                for (ProviderBundle providerBundle : providers) {
-                    List<BundleCapability> providerCapabilities = providerBundle.getServiceCapabilities();
-
-                    for (BundleCapability providerCapability : providerCapabilities) {
-
-                        if (consumerRequirement.matches(providerCapability) && !selectedProviders.contains(providerBundle)) {
-                            selectedProviders.add(providerBundle);
-                        }
-                    }
+            for(Bundle visibleBundle : visibleBundles){
+                if(isProvider(visibleBundle)){
+                    selectedProviders.add(getProvider(visibleBundle));
                 }
-
             }
+
         } else {
             selectedProviders.addAll(providers);
         }
