@@ -1,4 +1,4 @@
-package org.wso2.osgi.spi.registrar;
+package org.wso2.osgi.spi.internal;
 
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
@@ -16,21 +16,20 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.Dictionary;
-import java.util.HashMap;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
-// TODO: 2/6/16 handle concurrency
 public class ProviderBundle {
 
     private Bundle providerBundle;
     private List<BundleCapability> serviceCapabilities = new ArrayList<>();
-    private Map<String, List<String>> advertisedServices = new HashMap<>();
+    private Map<String, List<String>> advertisedServices = new ConcurrentHashMap<>();
+    private boolean requireRegistrar = false;
 
-    public ProviderBundle(Bundle providerBundle) {
+    public ProviderBundle(Bundle providerBundle, boolean requireRegistrar) {
         this.providerBundle = providerBundle;
+        this.requireRegistrar = requireRegistrar;
         this.processProvidedServices();
         this.processMetaServiceDescriptor();
 
@@ -62,28 +61,8 @@ public class ProviderBundle {
         return false;
     }
 
-    // TODO: 2/8/16 optimize processing
     public boolean requireRegistrar() {
-
-        BundleWiring bundleWiring = providerBundle.adapt(BundleWiring.class);
-        if (bundleWiring == null) {
-            return false;
-        }
-
-        List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
-        for (BundleRequirement requirement : requirements) {
-            try {
-                Filter filter = FrameworkUtil.createFilter(requirement.getDirectives().get(Constants.FILTER_DIRECTIVE));
-                Dictionary<String, String> lookupRegistrar = new Hashtable<>();
-                lookupRegistrar.put(Constants.EXTENDER_CAPABILITY_NAMESPACE, Constants.REGISTRAR_EXTENDER_NAME);
-                if (filter.matchCase(lookupRegistrar)) {
-                    return true;
-                }
-            } catch (InvalidSyntaxException e) {
-                e.printStackTrace();
-            }
-        }
-        return false;
+        return requireRegistrar;
     }
 
     private void processMetaServiceDescriptor() {
@@ -133,7 +112,11 @@ public class ProviderBundle {
         return providerBundle.loadClass(serviceProviderName);
     }
 
-    public BundleContext getBundleContext(){
+    public BundleContext getBundleContext() {
         return providerBundle.getBundleContext();
+    }
+
+    public boolean hasPermission(Object permission) {
+        return providerBundle.hasPermission(permission);
     }
 }

@@ -3,17 +3,19 @@ package org.wso2.osgi.spi.registrar;
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleCapability;
 import org.wso2.osgi.spi.internal.Constants;
+import org.wso2.osgi.spi.internal.ProviderBundle;
 import org.wso2.osgi.spi.internal.ServiceLoaderActivator;
+import org.wso2.osgi.spi.security.Permissions;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 public class ServiceRegistrar {
 
-    private static Map<ProviderBundle, List<ServiceRegistration>> serviceRegistrations = new HashMap<>();
+    private static Map<ProviderBundle, List<ServiceRegistration>> serviceRegistrations = new ConcurrentHashMap<>();
 
     public static void register(ProviderBundle providerBundle) {
         if (!providerBundle.requireRegistrar()) {
@@ -42,7 +44,7 @@ public class ServiceRegistrar {
                 if (advertisedServiceProviders.contains(serviceProvider)) {
                     registerServiceProvider(providerBundle, serviceType, serviceProvider, serviceProperties);
                 } else {
-                    // TODO: 2/6/16 throw exception meta inf file invalid
+                    // TODO: 2/6/16 throw exception meta inf file invalid or empty register directive
                 }
 
             } else {
@@ -56,25 +58,27 @@ public class ServiceRegistrar {
     private static void registerServiceProvider(ProviderBundle providerBundle, String serviceType,
                                                 String serviceProvider, Hashtable<String, ?> properties) {
 
-        try {
-            Class<?> clazz = providerBundle.getServiceProviderClass(serviceProvider);
-            ServiceRegistration registration = providerBundle.getBundleContext()
-                    .registerService(serviceType, new ServiceProviderFactory<>(clazz), properties);
+        if (Permissions.canRegisterService(providerBundle, serviceType)) {
+            try {
+                Class<?> clazz = providerBundle.getServiceProviderClass(serviceProvider);
+                ServiceRegistration registration = providerBundle.getBundleContext()
+                        .registerService(serviceType, new ServiceProviderFactory<>(clazz), properties);
 
-            if (!serviceRegistrations.containsKey(providerBundle)) {
-                serviceRegistrations.put(providerBundle, new ArrayList<>());
+                if (!serviceRegistrations.containsKey(providerBundle)) {
+                    serviceRegistrations.put(providerBundle, new ArrayList<>());
+                }
+                serviceRegistrations.get(providerBundle).add(registration);
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
             }
-            serviceRegistrations.get(providerBundle).add(registration);
-        } catch (ClassNotFoundException e) {
-            e.printStackTrace();
+        } else {
+            // todo throw exception access denied
         }
     }
 
     private static Hashtable<String, ?> getServiceProperties(BundleCapability serviceCapability) {
 
         Hashtable<String, Object> serviceProperties = new Hashtable<>();
-        serviceProperties.put(Constants.SERVICELOADER_MEDIATOR_PROPERTY, ServiceLoaderActivator.getInstance().getBundleId());
-
         Map<String, Object> capabilityAttributes = serviceCapability.getAttributes();
 
         for (Map.Entry<String, Object> attribute : capabilityAttributes.entrySet()) {
@@ -84,15 +88,29 @@ public class ServiceRegistrar {
             }
             serviceProperties.put(key, attribute.getValue());
         }
+
+        serviceProperties.put(Constants.SERVICELOADER_MEDIATOR_PROPERTY, ServiceLoaderActivator.getInstance().getBundleId());
+
         return serviceProperties;
     }
 
     public static void unregister(ProviderBundle providerBundle) {
         List<ServiceRegistration> registrations = serviceRegistrations.remove(providerBundle);
-        if(registrations != null){
-            for(ServiceRegistration registration : registrations){
+        if (registrations != null) {
+            for (ServiceRegistration registration : registrations) {
                 registration.unregister();
             }
         }
+    }
+
+    public static void unregisterAll() {
+
+        for (Map.Entry<ProviderBundle, List<ServiceRegistration>> entry : serviceRegistrations.entrySet()) {
+            List<ServiceRegistration> registrations = entry.getValue();
+            for (ServiceRegistration registration : registrations) {
+                registration.unregister();
+            }
+        }
+        serviceRegistrations.clear();
     }
 }

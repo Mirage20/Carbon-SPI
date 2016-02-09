@@ -16,7 +16,7 @@
  * specific language governing permissions and limitations
  * under the License.
  */
-package org.wso2.osgi.spi.processor;
+package org.wso2.osgi.spi.junk;
 
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;

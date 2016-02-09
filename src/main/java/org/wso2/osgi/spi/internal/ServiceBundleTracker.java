@@ -11,8 +11,6 @@ import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
 import org.wso2.osgi.spi.junk.Junk;
-import org.wso2.osgi.spi.processor.ConsumerBundle;
-import org.wso2.osgi.spi.registrar.ProviderBundle;
 import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
 import java.util.ArrayList;
@@ -100,10 +98,24 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         }
 
         List<BundleCapability> capabilities = bundleWiring.getCapabilities(Constants.SERVICELOADER_NAMESPACE);
+        boolean requireRegistrar = false;
+        boolean isProvider = false;
 
         if (!capabilities.isEmpty()) {
-            providers.add(new ProviderBundle(bundle));
-            isTracked = true;
+            isProvider = true;
+        }
+
+        List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
+        for (BundleRequirement requirement : requirements) {
+            if (requirement.matches(mediatorRegistrarCapability)) {
+                requireRegistrar = true;
+                break;
+            }
+        }
+
+        if(isProvider) {
+            providers.add(new ProviderBundle(bundle,requireRegistrar));
+            isTracked =true;
         }
     }
 
@@ -177,8 +189,8 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
             List<Bundle> visibleBundles = consumerBundle.getVisibleBundles();
 
-            for(Bundle visibleBundle : visibleBundles){
-                if(isProvider(visibleBundle)){
+            for (Bundle visibleBundle : visibleBundles) {
+                if (isProvider(visibleBundle)) {
                     selectedProviders.add(getProvider(visibleBundle));
                 }
             }

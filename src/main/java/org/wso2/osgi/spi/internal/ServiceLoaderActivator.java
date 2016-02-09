@@ -7,6 +7,7 @@ import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.util.tracker.BundleTracker;
 import org.wso2.osgi.spi.processor.ConsumerProcessor;
+import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
 public class ServiceLoaderActivator implements BundleActivator {
 
@@ -18,25 +19,25 @@ public class ServiceLoaderActivator implements BundleActivator {
 
     public void start(BundleContext context) throws Exception {
 
-        System.out.println("Bundle Activator Start");
+        System.out.println("Mediator Bundle Starting");
         instance = this;
         bundleId = context.getBundle().getBundleId();
 
         int trackStates = Bundle.STARTING | Bundle.STOPPING | Bundle.RESOLVED | Bundle.INSTALLED | Bundle.UNINSTALLED |Bundle.ACTIVE;
         serviceBundleTracker = new ServiceBundleTracker(context, trackStates);
         serviceBundleTracker.open();
-        BundleTracker b;
 
         ConsumerProcessor consumerProcessor = new ConsumerProcessor();
         weavingHookService = context.registerService(WeavingHook.class, consumerProcessor, null);
 
-        System.out.println("Bundle Activator Started");
+        System.out.println("Mediator Bundle Started");
     }
 
     public void stop(BundleContext context) throws Exception {
         serviceBundleTracker.close();
         weavingHookService.unregister();
-        System.out.println("Bundle Activator Stop");
+        ServiceRegistrar.unregisterAll();
+        System.out.println("Mediator Bundle Stopped");
     }
 
     public static ServiceLoaderActivator getInstance() {

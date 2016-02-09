@@ -28,7 +28,6 @@ import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.wso2.osgi.spi.processor.DynamicInject;
-import org.wso2.osgi.spi.processor.WeavingData;
 
 import java.util.Arrays;
 import java.util.HashSet;
