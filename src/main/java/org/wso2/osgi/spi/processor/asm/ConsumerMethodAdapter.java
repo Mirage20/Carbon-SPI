@@ -1,4 +1,4 @@
-package org.wso2.osgi.spi.processor;
+package org.wso2.osgi.spi.processor.asm;
 
 import org.objectweb.asm.Label;
 import org.objectweb.asm.MethodVisitor;
@@ -6,20 +6,21 @@ import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
-import org.wso2.osgi.spi.internal.Constants;
+import org.wso2.osgi.spi.processor.DynamicInject;
 
 public class ConsumerMethodAdapter extends GeneratorAdapter implements Opcodes {
 
     private final Type DYNAMIC_INJECT_TYPE = Type.getType(DynamicInject.class);
     private final Type CLASS_TYPE = Type.getType(Class.class);
-    private final Type STRING_TYPE = Type.getType(String.class);
     private final Type CLASSLOADER_TYPE = Type.getType(ClassLoader.class);
     private final ConsumerClassVisitor consumerClassVisitor;
     private final String JAVA_SPI_CLASSPATH = "java/util/ServiceLoader";
     private final String JAVA_SPI_METHOD = "load";
-    private final String JAVA_SPI_METHOD_SIGNATURE = "(Ljava/lang/Class;)Ljava/util/ServiceLoader;";
+    private final String JAVA_SPI_METHOD_SIGNATURE_DEFAULT = "(Ljava/lang/Class;)Ljava/util/ServiceLoader;";
+    private final String JAVA_SPI_METHOD_SIGNATURE_CLASSLOADER = "(Ljava/lang/Class;Ljava/lang/ClassLoader;)Ljava/util/ServiceLoader;";
 
     private boolean isLdcTracked = false;
+    private boolean hasClassLoaderParameter = false;
     private Type lastLdcType;
 
     public ConsumerMethodAdapter(ConsumerClassVisitor cv, MethodVisitor mv, int access, String name, String desc) {
@@ -39,7 +40,7 @@ public class ConsumerMethodAdapter extends GeneratorAdapter implements Opcodes {
     @Override
     public void visitMethodInsn(int opcode, String owner, String name, String desc, boolean itf) {
 
-        if (isSPICall(opcode,owner,name,desc,itf)) {
+        if (isSPICall(opcode, owner, name, desc, itf)) {
 
             isLdcTracked = true;
 
@@ -65,6 +66,18 @@ public class ConsumerMethodAdapter extends GeneratorAdapter implements Opcodes {
             //Call our util method
             invokeStatic(DYNAMIC_INJECT_TYPE, new Method("fixContextClassloader", Type.VOID_TYPE,
                     new Type[]{CLASS_TYPE, CLASSLOADER_TYPE}));
+
+            if (hasClassLoaderParameter) {
+
+                visitInsn(POP);
+                visitInsn(POP);
+                visitLdcInsn(lastLdcType);
+
+                invokeStatic(Type.getType(Thread.class), new Method("currentThread", Type.getType(Thread.class),
+                        new Type[0]));
+                invokeVirtual(Type.getType(Thread.class), new Method("getContextClassLoader",
+                        CLASSLOADER_TYPE, new Type[0]));
+            }
 
             //Call the original instruction
             super.visitMethodInsn(opcode, owner, name, desc, itf);
@@ -95,7 +108,21 @@ public class ConsumerMethodAdapter extends GeneratorAdapter implements Opcodes {
         boolean isStatic = (opcode == INVOKESTATIC);
         boolean isJavaServiceLoader = owner.equals(JAVA_SPI_CLASSPATH);
         boolean isLoadMethod = name.equals(JAVA_SPI_METHOD);
-        boolean isValidMethodSignature = desc.equals(JAVA_SPI_METHOD_SIGNATURE);
+        boolean isValidMethodSignature;
+
+        switch (desc) {
+            case JAVA_SPI_METHOD_SIGNATURE_DEFAULT:
+                isValidMethodSignature = true;
+                hasClassLoaderParameter = false;
+                break;
+            case JAVA_SPI_METHOD_SIGNATURE_CLASSLOADER:
+                isValidMethodSignature = true;
+                hasClassLoaderParameter = true;
+                break;
+            default:
+                isValidMethodSignature = false;
+                break;
+        }
 
         return isStatic && isJavaServiceLoader && isLoadMethod && isValidMethodSignature && !itf;
     }

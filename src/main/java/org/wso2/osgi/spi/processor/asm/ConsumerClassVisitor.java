@@ -1,4 +1,4 @@
-package org.wso2.osgi.spi.processor;
+package org.wso2.osgi.spi.processor.asm;
 
 
 import org.objectweb.asm.ClassVisitor;

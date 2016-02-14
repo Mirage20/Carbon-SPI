@@ -7,6 +7,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.framework.hooks.weaving.WovenClass;
 import org.wso2.osgi.spi.internal.ServiceLoaderActivator;
+import org.wso2.osgi.spi.processor.asm.ConsumerClassVisitor;
 
 public class ConsumerProcessor implements WeavingHook {
 
