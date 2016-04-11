@@ -3,10 +3,13 @@ package org.wso2.osgi.spi.internal;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
 public class ServiceLoaderActivator implements BundleActivator {
 
+    private static final Logger log = LoggerFactory.getLogger(ServiceLoaderActivator.class);
     private static ServiceLoaderActivator instance = null;
 
     private ServiceBundleTracker serviceBundleTracker = null;
@@ -15,21 +18,20 @@ public class ServiceLoaderActivator implements BundleActivator {
 
     public void start(BundleContext context) throws Exception {
 
-        System.out.println("Mediator Bundle Starting");
         instance = this;
         bundleId = context.getBundle().getBundleId();
 
-        int trackStates = Bundle.STARTING | Bundle.STOPPING | Bundle.RESOLVED | Bundle.INSTALLED | Bundle.UNINSTALLED | Bundle.ACTIVE;
+        int trackStates = Bundle.STARTING | Bundle.STOPPING | Bundle.RESOLVED | Bundle.ACTIVE;
         serviceBundleTracker = new ServiceBundleTracker(context, trackStates);
         serviceBundleTracker.open();
 
-        System.out.println("Mediator Bundle Started");
+        log.info("Mediator bundle started");
     }
 
     public void stop(BundleContext context) throws Exception {
         serviceBundleTracker.close();
         ServiceRegistrar.unregisterAll();
-        System.out.println("Mediator Bundle Stopped");
+        log.info("Mediator bundle stopped");
     }
 
     public static ServiceLoaderActivator getInstance() {
