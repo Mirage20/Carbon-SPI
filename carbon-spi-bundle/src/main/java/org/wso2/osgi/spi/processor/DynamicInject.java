@@ -59,6 +59,9 @@ public class DynamicInject {
 
     private static ClassLoader findContextClassloader(Bundle consumerBundle, Class<?> serviceType) {
 
+        if(ServiceLoaderActivator.getInstance() == null){
+            return null;
+        }
         ConsumerBundle consumer = ServiceLoaderActivator.getInstance().getServiceBundleTracker().getConsumer(consumerBundle);
 
         if(!Permissions.canConsumeService(consumer,serviceType.getName())){

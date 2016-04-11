@@ -3,13 +3,6 @@ package org.wso2.osgi.spi.internal;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleActivator;
 import org.osgi.framework.BundleContext;
-import org.osgi.framework.ServiceReference;
-import org.osgi.framework.ServiceRegistration;
-import org.osgi.framework.hooks.weaving.WeavingHook;
-import org.osgi.util.tracker.BundleTracker;
-import org.wso2.osgi.spi.junk.MediatorReady;
-import org.wso2.osgi.spi.junk.Ready;
-import org.wso2.osgi.spi.processor.ConsumerProcessor;
 import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
 public class ServiceLoaderActivator implements BundleActivator {
@@ -17,8 +10,6 @@ public class ServiceLoaderActivator implements BundleActivator {
     private static ServiceLoaderActivator instance = null;
 
     private ServiceBundleTracker serviceBundleTracker = null;
-    private ServiceRegistration weavingHookService = null;
-    private ServiceRegistration mediatorReadyService = null;
 
     private long bundleId;
 
@@ -32,18 +23,11 @@ public class ServiceLoaderActivator implements BundleActivator {
         serviceBundleTracker = new ServiceBundleTracker(context, trackStates);
         serviceBundleTracker.open();
 
-        ConsumerProcessor consumerProcessor = new ConsumerProcessor();
-        weavingHookService = context.registerService(WeavingHook.class, consumerProcessor, null);
-        MediatorReady mr = new MediatorReady();
-        mediatorReadyService = context.registerService(Ready.class,mr,null);
-
         System.out.println("Mediator Bundle Started");
     }
 
     public void stop(BundleContext context) throws Exception {
         serviceBundleTracker.close();
-        weavingHookService.unregister();
-        mediatorReadyService.unregister();
         ServiceRegistrar.unregisterAll();
         System.out.println("Mediator Bundle Stopped");
     }
