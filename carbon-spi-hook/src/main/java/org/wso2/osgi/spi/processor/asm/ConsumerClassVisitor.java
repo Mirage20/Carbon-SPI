@@ -5,7 +5,9 @@ import org.objectweb.asm.ClassVisitor;
 import org.objectweb.asm.MethodVisitor;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
-
+/**
+ * Customized ClassVisitor for modifying the consumer classes.
+ */
 public class ConsumerClassVisitor extends ClassVisitor implements Opcodes {
 
     private final Type consumerClassType;

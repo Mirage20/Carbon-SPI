@@ -15,9 +15,11 @@ import org.wso2.osgi.spi.processor.asm.ConsumerClassVisitor;
 
 import java.util.List;
 
+/**
+ * Process the consumer classes which use {@link java.util.ServiceLoader} API.
+ */
 public class ConsumerProcessor implements WeavingHook {
-
-
+    @Override
     public void weave(WovenClass wovenClass) {
 
         boolean isConsumer = false;
@@ -33,7 +35,8 @@ public class ConsumerProcessor implements WeavingHook {
 
                 if (extenderCapabilityType.equals(Constants.PROCESSOR_EXTENDER_NAME)) {
                     processorCapability = requiredWire.getCapability();
-                    List<BundleRequirement> requirements = bundleWiring.getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
+                    List<BundleRequirement> requirements = bundleWiring
+                            .getRequirements(Constants.EXTENDER_CAPABILITY_NAMESPACE);
                     for (BundleRequirement requirement : requirements) {
                         if (requirement.matches(processorCapability)) {
                             isConsumer = true;
@@ -48,7 +51,8 @@ public class ConsumerProcessor implements WeavingHook {
         if (isConsumer) {
             ClassReader classReader = new ClassReader(wovenClass.getBytes());
             ClassWriter classWriter = new ClassWriter(ClassWriter.COMPUTE_MAXS | ClassWriter.COMPUTE_FRAMES);
-            ConsumerClassVisitor consumerClassVisitor = new ConsumerClassVisitor(classWriter, wovenClass.getClassName());
+            ConsumerClassVisitor consumerClassVisitor
+                    = new ConsumerClassVisitor(classWriter, wovenClass.getClassName());
             classReader.accept(consumerClassVisitor, ClassReader.SKIP_FRAMES);
             if (consumerClassVisitor.isModified()) {
                 wovenClass.setBytes(classWriter.toByteArray());

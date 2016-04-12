@@ -8,16 +8,20 @@ import org.objectweb.asm.commons.GeneratorAdapter;
 import org.objectweb.asm.commons.Method;
 import org.wso2.osgi.spi.Constants;
 
+/**
+ * Customized GeneratorAdapter for modifying the Service Loader call.
+ */
 public class ConsumerMethodAdapter extends GeneratorAdapter implements Opcodes {
 
-    private final Type DYNAMIC_INJECT_TYPE = Type.getType(Constants.DYNAMIC_INJECT_CLASS_NAME);
-    private final Type CLASS_TYPE = Type.getType(Class.class);
-    private final Type CLASSLOADER_TYPE = Type.getType(ClassLoader.class);
+    private static final Type DYNAMIC_INJECT_TYPE = Type.getType(Constants.DYNAMIC_INJECT_CLASS_NAME);
+    private static final Type CLASS_TYPE = Type.getType(Class.class);
+    private static final Type CLASSLOADER_TYPE = Type.getType(ClassLoader.class);
     private final ConsumerClassVisitor consumerClassVisitor;
-    private final String JAVA_SPI_CLASSPATH = "java/util/ServiceLoader";
-    private final String JAVA_SPI_METHOD = "load";
-    private final String JAVA_SPI_METHOD_SIGNATURE_DEFAULT = "(Ljava/lang/Class;)Ljava/util/ServiceLoader;";
-    private final String JAVA_SPI_METHOD_SIGNATURE_CLASSLOADER = "(Ljava/lang/Class;Ljava/lang/ClassLoader;)Ljava/util/ServiceLoader;";
+    private static final String JAVA_SPI_CLASSPATH = "java/util/ServiceLoader";
+    private static final String JAVA_SPI_METHOD = "load";
+    private static final String JAVA_SPI_METHOD_SIGNATURE_DEFAULT = "(Ljava/lang/Class;)Ljava/util/ServiceLoader;";
+    private static final String JAVA_SPI_METHOD_SIGNATURE_CLASSLOADER
+            = "(Ljava/lang/Class;Ljava/lang/ClassLoader;)Ljava/util/ServiceLoader;";
 
     private boolean isLdcTracked = false;
     private boolean hasClassLoaderParameter = false;

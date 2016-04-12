@@ -5,6 +5,9 @@ import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.wso2.carbon.launcher.FrameworkStartupHook;
 import org.wso2.osgi.spi.processor.ConsumerProcessor;
 
+/**
+ * Class for registering the weaving hook service to the OSGi framework via the system bundle.
+ */
 public class WeavingServiceHook implements FrameworkStartupHook {
     @Override
     public void systemBundleStarted(BundleContext systemBundleContext) {
