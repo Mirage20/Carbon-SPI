@@ -6,5 +6,9 @@ public class MockConsumerClass {
     public void requestService() {
         ServiceLoader<MockInterface> mockInterfaces = ServiceLoader.load(MockInterface.class);
         mockInterfaces.forEach(MockInterface::doSomething);
+
+        ServiceLoader<MockInterface> mockInterfacesWithClassLoader = ServiceLoader.load(MockInterface.class,
+                this.getClass().getClassLoader());
+        mockInterfacesWithClassLoader.forEach(MockInterface::doSomething);
     }
 }
