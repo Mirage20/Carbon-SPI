@@ -1,5 +1,8 @@
 package org.wso2.osgi.spi.internal;
 
+/**
+ * OSGi mediator specific constants.
+ */
 public class Constants {
 
     public static final String EXTENDER_CAPABILITY_NAMESPACE = "osgi.extender";

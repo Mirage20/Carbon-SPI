@@ -5,9 +5,12 @@ import org.osgi.framework.ServicePermission;
 import org.wso2.osgi.spi.internal.ConsumerBundle;
 import org.wso2.osgi.spi.internal.ProviderBundle;
 
+/**
+ * Util class for checking osgi permissions.
+ */
 public class Permissions {
 
-    public static boolean canRegisterService(ProviderBundle providerBundle,String serviceType) {
+    public static boolean canRegisterService(ProviderBundle providerBundle, String serviceType) {
         return providerBundle.hasPermission(new ServicePermission(serviceType, ServicePermission.REGISTER));
     }
 
@@ -15,7 +18,7 @@ public class Permissions {
         return consumerBundle.hasPermission(new ServicePermission(serviceType, ServicePermission.GET));
     }
 
-    public static boolean checkAdminPermissions(ProviderBundle providerBundle,String serviceType) {
+    public static boolean checkAdminPermissions(ProviderBundle providerBundle, String serviceType) {
         return providerBundle.hasPermission(new AdminPermission());
     }
 }

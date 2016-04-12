@@ -7,6 +7,9 @@ import java.util.Collections;
 import java.util.Enumeration;
 import java.util.List;
 
+/**
+ * Class loader which combines multiple class loaders.
+ */
 public class CombinedClassLoader extends ClassLoader {
 
     private final List<ClassLoader> bundleClassLoaders;

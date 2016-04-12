@@ -8,6 +8,9 @@ import org.osgi.framework.wiring.BundleWiring;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Wrapper class for service consumer bundles.
+ */
 public class ConsumerBundle {
 
     private Bundle consumerBundle;
@@ -29,7 +32,8 @@ public class ConsumerBundle {
         if (bundleWiring == null) {
             return;
         }
-        List<BundleRequirement> visibilityRequirements = bundleWiring.getRequirements(Constants.SERVICELOADER_NAMESPACE);
+        List<BundleRequirement> visibilityRequirements = bundleWiring
+                .getRequirements(Constants.SERVICELOADER_NAMESPACE);
 
         if (visibilityRequirements != null && !visibilityRequirements.isEmpty()) {
             isVisibilityRestricted = true;

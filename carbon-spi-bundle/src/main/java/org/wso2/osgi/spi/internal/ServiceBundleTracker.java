@@ -3,24 +3,24 @@ package org.wso2.osgi.spi.internal;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleEvent;
-import org.osgi.framework.Filter;
-import org.osgi.framework.FrameworkUtil;
-import org.osgi.framework.InvalidSyntaxException;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.wso2.osgi.spi.junk.Junk;
 import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
+import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Dictionary;
-import java.util.Hashtable;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * This class tracks the required bundles for the mediator.
+ *
+ * @param <T> Type of the tracking object
+ */
 public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceBundleTracker.class);
@@ -120,8 +120,12 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         }
 
         if (isProvider) {
-            providers.add(new ProviderBundle(bundle, requireRegistrar));
-            isTracked = true;
+            try {
+                providers.add(new ProviderBundle(bundle, requireRegistrar));
+                isTracked = true;
+            } catch (IOException e) {
+                log.error("Could not track the service provider bundle: " + bundle.getSymbolicName(), e);
+            }
         }
     }
 

@@ -6,8 +6,8 @@ import org.osgi.framework.wiring.BundleWiring;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.osgi.spi.internal.ConsumerBundle;
-import org.wso2.osgi.spi.internal.ServiceBundleTracker;
 import org.wso2.osgi.spi.internal.ProviderBundle;
+import org.wso2.osgi.spi.internal.ServiceBundleTracker;
 import org.wso2.osgi.spi.internal.ServiceLoaderActivator;
 import org.wso2.osgi.spi.security.Permissions;
 
@@ -16,6 +16,9 @@ import java.security.PrivilegedAction;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Methods of this class are dynamically inject to the classes which use {@link java.util.ServiceLoader} API.
+ */
 public class DynamicInject {
 
     private static final Logger log = LoggerFactory.getLogger(DynamicInject.class);
@@ -82,7 +85,8 @@ public class DynamicInject {
         if (ServiceLoaderActivator.getInstance() == null) {
             return null;
         }
-        ConsumerBundle consumer = ServiceLoaderActivator.getInstance().getServiceBundleTracker().getConsumer(consumerBundle);
+        ConsumerBundle consumer = ServiceLoaderActivator.getInstance().getServiceBundleTracker()
+                .getConsumer(consumerBundle);
 
         if (!Permissions.canConsumeService(consumer, serviceType.getName())) {
             log.warn("Bundle: " + consumer.getConsumerBundle().getSymbolicName() + " does not have GET permission " +

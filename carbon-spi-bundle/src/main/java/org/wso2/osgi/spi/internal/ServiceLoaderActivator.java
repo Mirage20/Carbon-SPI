@@ -7,6 +7,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
+/**
+ * Bundle Activator for the service loader mediator.
+ */
 public class ServiceLoaderActivator implements BundleActivator {
 
     private static final Logger log = LoggerFactory.getLogger(ServiceLoaderActivator.class);

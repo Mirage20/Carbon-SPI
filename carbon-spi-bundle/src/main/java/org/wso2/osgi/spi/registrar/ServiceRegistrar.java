@@ -2,6 +2,8 @@ package org.wso2.osgi.spi.registrar;
 
 import org.osgi.framework.ServiceRegistration;
 import org.osgi.framework.wiring.BundleCapability;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.osgi.spi.internal.Constants;
 import org.wso2.osgi.spi.internal.ProviderBundle;
 import org.wso2.osgi.spi.internal.ServiceLoaderActivator;
@@ -13,8 +15,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Handles the osgi service registration for the service provider bundles.
+ */
 public class ServiceRegistrar {
-
+    private static final Logger log = LoggerFactory.getLogger(ServiceRegistrar.class);
     private static Map<ProviderBundle, List<ServiceRegistration>> serviceRegistrations = new ConcurrentHashMap<>();
 
     public static void register(ProviderBundle providerBundle) {
@@ -69,10 +74,12 @@ public class ServiceRegistrar {
                 }
                 serviceRegistrations.get(providerBundle).add(registration);
             } catch (ClassNotFoundException e) {
-                e.printStackTrace();
+                log.warn("Service provider class not found in "
+                        + providerBundle.getProviderBundle().getSymbolicName(), e);
             }
         } else {
-            // todo throw exception access denied
+            log.warn("Bundle: " + providerBundle.getProviderBundle().getSymbolicName()
+                    + " does not have REGISTER permission for the service type: " + serviceType);
         }
     }
 
@@ -83,13 +90,15 @@ public class ServiceRegistrar {
 
         for (Map.Entry<String, Object> attribute : capabilityAttributes.entrySet()) {
             String key = attribute.getKey();
-            if (key.startsWith(".") || key.equals(Constants.SERVICELOADER_NAMESPACE) || key.equals(Constants.CAPABILITY_REGISTER_DIRECTIVE)) {
+            if (key.startsWith(".") || key.equals(Constants.SERVICELOADER_NAMESPACE)
+                    || key.equals(Constants.CAPABILITY_REGISTER_DIRECTIVE)) {
                 continue;
             }
             serviceProperties.put(key, attribute.getValue());
         }
 
-        serviceProperties.put(Constants.SERVICELOADER_MEDIATOR_PROPERTY, ServiceLoaderActivator.getInstance().getBundleId());
+        serviceProperties.put(Constants.SERVICELOADER_MEDIATOR_PROPERTY,
+                ServiceLoaderActivator.getInstance().getBundleId());
 
         return serviceProperties;
     }
