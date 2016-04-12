@@ -10,6 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
 
     <artifactId>carbon-spi-hook</artifactId>
+    <name>Carbon SPI - Weaving Hook</name>
 
     <dependencies>
         <dependency>

@@ -10,7 +10,7 @@
     <modelVersion>4.0.0</modelVersion>
     <packaging>bundle</packaging>
     <artifactId>carbon-spi-bundle</artifactId>
-
+    <name>Carbon SPI - Mediator Bundle</name>
     <dependencies>
         <dependency>
             <groupId>org.osgi</groupId>

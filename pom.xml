@@ -11,6 +11,7 @@
 
     <artifactId>carbon-spi</artifactId>
     <packaging>pom</packaging>
+    <name>Carbon SPI - Parent</name>
     <modules>
         <module>carbon-spi-hook</module>
         <module>carbon-spi-bundle</module>
