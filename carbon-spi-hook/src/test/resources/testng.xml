@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Carbon-SPI-Hook-Test-Suite">
+
+    <test name="carbon-spi-hook-unit-tests">
+        <classes>
+            <class name="org.wso2.osgi.spi.processor.test.ConsumerProcessorTest" />
+        </classes>
+    </test>
+</suite>
