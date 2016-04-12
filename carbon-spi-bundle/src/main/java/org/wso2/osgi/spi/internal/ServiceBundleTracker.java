@@ -10,6 +10,8 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleWiring;
 import org.osgi.util.tracker.BundleTracker;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.wso2.osgi.spi.junk.Junk;
 import org.wso2.osgi.spi.registrar.ServiceRegistrar;
 
@@ -17,9 +19,11 @@ import java.util.ArrayList;
 import java.util.Dictionary;
 import java.util.Hashtable;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class ServiceBundleTracker<T> extends BundleTracker<T> {
 
+    private static final Logger log = LoggerFactory.getLogger(ServiceBundleTracker.class);
     private List<ConsumerBundle> consumers = new ArrayList<>();
     private List<ProviderBundle> providers = new ArrayList<>();
 
@@ -64,7 +68,9 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         findProviders(bundle);
 
         if (isTracked) {
-            System.out.println("TrackerCustom Added: " + bundle.getSymbolicName() + " Event: " + Junk.typeAsString(event));
+            if (log.isDebugEnabled()) {
+                log.debug("Added bundle: " + bundle.getSymbolicName() + " to the ServiceBundleTracker ");
+            }
             return super.addingBundle(bundle, event);
         }
 
@@ -113,9 +119,9 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
             }
         }
 
-        if(isProvider) {
-            providers.add(new ProviderBundle(bundle,requireRegistrar));
-            isTracked =true;
+        if (isProvider) {
+            providers.add(new ProviderBundle(bundle, requireRegistrar));
+            isTracked = true;
         }
     }
 
@@ -123,7 +129,6 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
     public void modifiedBundle(Bundle bundle, BundleEvent event, T object) {
 
         super.modifiedBundle(bundle, event, object);
-        System.out.println("TrackerCustom Modified: " + bundle.getSymbolicName() + " Event: " + Junk.typeAsString(event));
 
         if (this.isProvider(bundle)) {
             ProviderBundle providerBundle = this.getProvider(bundle);
@@ -139,8 +144,9 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
     @Override
     public void removedBundle(Bundle bundle, BundleEvent event, T object) {
         super.removedBundle(bundle, event, object);
-        System.out.println("Tracker Custom Remove: " + bundle.getSymbolicName() + " Event: " + Junk.typeAsString(event));
-
+        if (log.isDebugEnabled()) {
+            log.debug("Removed bundle: " + bundle.getSymbolicName() + " from the ServiceBundleTracker ");
+        }
     }
 
 
@@ -181,24 +187,25 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         return null;
     }
 
-    public List<ProviderBundle> getMatchingProviders(String requestingServiceType, ConsumerBundle consumerBundle) {
+    public List<ProviderBundle> getMatchingProviders(ConsumerBundle consumerBundle) {
 
         List<ProviderBundle> selectedProviders = new ArrayList<>();
+        if (ServiceLoaderActivator.getInstance().isActive()) {
+            if (consumerBundle.isVisibilityRestricted()) {
 
-        if (consumerBundle.isVisibilityRestricted()) {
+                List<Bundle> visibleBundles = consumerBundle.getVisibleBundles();
 
-            List<Bundle> visibleBundles = consumerBundle.getVisibleBundles();
+                selectedProviders.addAll(visibleBundles.stream()
+                        .filter(bundle -> bundle.getState() == Bundle.ACTIVE && isProvider(bundle))
+                        .map(this::getProvider).collect(Collectors.toList()));
 
-            for (Bundle visibleBundle : visibleBundles) {
-                if (isProvider(visibleBundle)) {
-                    selectedProviders.add(getProvider(visibleBundle));
-                }
+            } else {
+                selectedProviders.addAll(providers.stream()
+                        .filter((providerBundle) -> providerBundle.getProviderBundle().getState() == Bundle.ACTIVE)
+                        .collect(Collectors.toList()));
             }
 
-        } else {
-            selectedProviders.addAll(providers);
         }
-
 
         return selectedProviders;
     }

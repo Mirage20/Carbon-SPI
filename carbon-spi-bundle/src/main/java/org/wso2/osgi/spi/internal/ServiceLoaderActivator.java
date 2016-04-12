@@ -15,6 +15,7 @@ public class ServiceLoaderActivator implements BundleActivator {
     private ServiceBundleTracker serviceBundleTracker = null;
 
     private long bundleId;
+    private boolean isActive = false;
 
     public void start(BundleContext context) throws Exception {
 
@@ -24,13 +25,14 @@ public class ServiceLoaderActivator implements BundleActivator {
         int trackStates = Bundle.STARTING | Bundle.STOPPING | Bundle.RESOLVED | Bundle.ACTIVE;
         serviceBundleTracker = new ServiceBundleTracker(context, trackStates);
         serviceBundleTracker.open();
-
+        isActive = true;
         log.info("Mediator bundle started");
     }
 
     public void stop(BundleContext context) throws Exception {
         serviceBundleTracker.close();
         ServiceRegistrar.unregisterAll();
+        isActive = false;
         log.info("Mediator bundle stopped");
     }
 
@@ -44,5 +46,9 @@ public class ServiceLoaderActivator implements BundleActivator {
 
     public long getBundleId() {
         return bundleId;
+    }
+
+    public boolean isActive() {
+        return isActive;
     }
 }
