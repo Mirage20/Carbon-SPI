@@ -11,13 +11,14 @@ import org.osgi.resource.Requirement;
 import org.osgi.resource.Wire;
 
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
 public class MockBundleWiring implements BundleWiring{
 
-    List<BundleCapability> capabilities;
-    List<BundleRequirement> requirements;
+    List<BundleCapability> capabilities = new ArrayList<>();
+    List<BundleRequirement> requirements = new ArrayList<>();
 
     public void setCapabilities(List<BundleCapability> capabilities) {
         this.capabilities = capabilities;

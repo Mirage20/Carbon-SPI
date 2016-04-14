@@ -4,7 +4,7 @@
 
 <suite name="Carbon-SPI-Hook-Test-Suite">
 
-    <test name="carbon-spi-hook-unit-tests">
+    <test name="carbon-spi-hook-unit-tests" preserve-order="true">
         <classes>
             <class name="org.wso2.osgi.spi.bundle.test.ServiceBundleTrackerTest" />
         </classes>

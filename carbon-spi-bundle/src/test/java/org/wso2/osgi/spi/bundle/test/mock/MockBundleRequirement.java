@@ -4,12 +4,13 @@ import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.osgi.framework.wiring.BundleRevision;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class MockBundleRequirement implements BundleRequirement {
 
-    Map<String, String> directives;
-    Map<String, Object> attributes;
+    Map<String, String> directives = new HashMap<>();
+    Map<String, Object> attributes = new HashMap<>();
 
     public void setAttributes(Map<String, Object> attributes) {
         this.attributes = attributes;

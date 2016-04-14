@@ -52,7 +52,7 @@ public class ServiceBundleTrackerTest {
     }
 
     @Test
-    public void addProviders() {
+    public void testAddProviders() {
         MockBundle mockProviderBundle = new MockBundle();
         MockBundleWiring mockBundleWiring = new MockBundleWiring();
 
@@ -83,5 +83,33 @@ public class ServiceBundleTrackerTest {
         Assert.assertEquals(bundleTracker.getProvider(mockProviderBundle).getProviderBundle(), mockProviderBundle,
                 "Test provider bundle is added");
         Assert.assertTrue(bundleTracker.isProvider(mockProviderBundle), "Test the added bundle is the provider.");
+        Assert.assertFalse(bundleTracker.isConsumer(mockProviderBundle), "Test the added bundle is a consumer.");
+    }
+
+
+    @Test
+    public void testAddConsumers() {
+        MockBundle mockConsumerBundle = new MockBundle();
+        MockBundleWiring mockBundleWiring = new MockBundleWiring();
+
+
+        List<BundleRequirement> bundleRequirementList = new ArrayList<>();
+
+        MockBundleRequirement mockMediatorProcessorCapability = new MockBundleRequirement();
+        Map<String, Object> attr2 = new HashMap<>();
+        attr2.put(Constants.EXTENDER_CAPABILITY_NAMESPACE, Constants.PROCESSOR_EXTENDER_NAME);
+        mockMediatorProcessorCapability.setAttributes(attr2);
+        bundleRequirementList.add(mockMediatorProcessorCapability);
+
+        mockBundleWiring.setRequirements(bundleRequirementList);
+
+        mockConsumerBundle.setWiring(mockBundleWiring);
+
+        bundleTracker.addingBundle(mockConsumerBundle, null);
+
+        Assert.assertEquals(bundleTracker.getConsumer(mockConsumerBundle).getConsumerBundle(), mockConsumerBundle,
+                "Test consumer bundle is added");
+        Assert.assertTrue(bundleTracker.isConsumer(mockConsumerBundle), "Test the added bundle is the consumer.");
+        Assert.assertFalse(bundleTracker.isProvider(mockConsumerBundle), "Test the added bundle is a provider.");
     }
 }
