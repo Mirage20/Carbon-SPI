@@ -15,6 +15,7 @@
     <modules>
         <module>carbon-spi-hook</module>
         <module>carbon-spi-bundle</module>
+        <module>carbon-spi-test</module>
     </modules>
 
     <dependencyManagement>
@@ -27,21 +28,19 @@
             <dependency>
                 <groupId>org.osgi</groupId>
                 <artifactId>org.osgi.core</artifactId>
-                <version>${osgi.core.version}</version>
+                <version>${osgi.core.api.version}</version>
                 <optional>true</optional>
                 <scope>provided</scope>
             </dependency>
             <dependency>
                 <groupId>org.wso2.carbon</groupId>
                 <artifactId>org.wso2.carbon.launcher</artifactId>
-                <version>${carbon.launcher.version}</version>
+                <version>${carbon.kernel.version}</version>
             </dependency>
         </dependencies>
     </dependencyManagement>
 
     <properties>
-        <osgi.core.version>6.0.0</osgi.core.version>
         <asm.all.version>5.0.4</asm.all.version>
-        <carbon.launcher.version>5.1.0-SNAPSHOT</carbon.launcher.version>
     </properties>
 </project>

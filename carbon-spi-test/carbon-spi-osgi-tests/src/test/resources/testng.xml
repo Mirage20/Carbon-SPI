@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd" >
+
+<suite name="Carbon-SPI-Hook-Test-Suite">
+
+    <listeners>
+        <listener class-name="org.wso2.osgi.spi.test.integration.OSGiTestListener"/>
+    </listeners>
+    <!--<test name="carbon-spi-osgi-test-mediator-startup">-->
+        <!--<classes>-->
+            <!--<class name="org.wso2.osgi.spi.test.integration.MediatorBundleStartupTest" />-->
+        <!--</classes>-->
+    <!--</test>-->
+
+    <!--<test name="carbon-spi-osgi-test-consumer-visibility">-->
+        <!--<classes>-->
+            <!--<class name="org.wso2.osgi.spi.test.integration.VisibilityRestrictedConsumerTest" />-->
+        <!--</classes>-->
+    <!--</test>-->
+
+    <test name="carbon-spi-osgi-test-all-artifacts">
+        <classes>
+            <class name="org.wso2.osgi.spi.test.integration.AllArtifactsTest" />
+        </classes>
+    </test>
+</suite>

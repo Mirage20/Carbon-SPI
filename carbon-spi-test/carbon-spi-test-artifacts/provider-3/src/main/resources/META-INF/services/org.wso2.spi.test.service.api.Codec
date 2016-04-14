@@ -1,0 +1,4 @@
+org.wso2.spi.test.service.provider.impl.OGG
+org.wso2.spi.test.service.provider.impl.WAVE
+org.wso2.spi.test.service.provider.impl.WMA
+org.wso2.spi.test.service.provider.impl.MP3
