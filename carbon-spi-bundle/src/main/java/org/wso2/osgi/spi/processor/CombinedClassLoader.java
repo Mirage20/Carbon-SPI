@@ -1,6 +1,7 @@
 package org.wso2.osgi.spi.processor;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -18,9 +19,8 @@ public class CombinedClassLoader extends ClassLoader {
         this.bundleClassLoaders = bundleClassLoaders;
     }
 
-
     @Override
-    protected Enumeration<URL> findResources(String name) throws IOException {
+    public Enumeration<URL> getResources(String name) throws IOException {
         List<URL> resourceUrls = new ArrayList<>();
         for (ClassLoader bundleClassLoader : bundleClassLoaders) {
             resourceUrls.addAll(Collections.list(bundleClassLoader.getResources(name)));
@@ -29,7 +29,7 @@ public class CombinedClassLoader extends ClassLoader {
     }
 
     @Override
-    protected URL findResource(String name) {
+    public URL getResource(String name) {
         for (ClassLoader bundleClassLoader : bundleClassLoaders) {
             URL resource = bundleClassLoader.getResource(name);
             if (resource != null) {
@@ -39,9 +39,9 @@ public class CombinedClassLoader extends ClassLoader {
         return null;
     }
 
-    @Override
-    protected Class<?> findClass(String name) throws ClassNotFoundException {
 
+    @Override
+    public Class<?> loadClass(String name) throws ClassNotFoundException {
         for (ClassLoader bundleClassLoader : bundleClassLoaders) {
             try {
                 return bundleClassLoader.loadClass(name);
@@ -53,4 +53,13 @@ public class CombinedClassLoader extends ClassLoader {
         throw new ClassNotFoundException(name);
     }
 
+    @Override
+    public InputStream getResourceAsStream(String name) {
+        for (ClassLoader bundleClassLoader : bundleClassLoaders) {
+            InputStream is = bundleClassLoader.getResourceAsStream(name);
+            if (is != null)
+                return is;
+        }
+        return null;
+    }
 }
