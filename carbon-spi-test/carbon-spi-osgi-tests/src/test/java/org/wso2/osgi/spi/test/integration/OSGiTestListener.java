@@ -3,17 +3,11 @@ package org.wso2.osgi.spi.test.integration;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.BundleException;
-import org.osgi.framework.hooks.weaving.WeavingHook;
 import org.osgi.framework.launch.Framework;
 import org.osgi.framework.launch.FrameworkFactory;
-import org.testng.ISuite;
-import org.testng.ISuiteListener;
 import org.testng.ITestContext;
 import org.testng.ITestListener;
 import org.testng.ITestResult;
-import org.testng.annotations.DataProvider;
-import org.testng.annotations.Listeners;
-import org.wso2.osgi.spi.processor.ConsumerProcessor;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -56,7 +50,7 @@ public class OSGiTestListener implements ITestListener {
     private void installInitialBundles(BundleContext bundleContext) throws BundleException {
         List<Bundle> initialBundles = new ArrayList<>();
         Path initialBundlesPath = Paths.get(System.getProperty(TestConstants.BUILD_DIRECTORY_PROPERTY),
-                "osgi","initial");
+                "osgi", "initial");
         initialBundles.add(bundleContext.installBundle(Paths.get(initialBundlesPath.toString(),
                 "org.eclipse.osgi.services.jar").toUri().toString()));
         initialBundles.add(bundleContext.installBundle(Paths.get(initialBundlesPath.toString(),
@@ -68,7 +62,7 @@ public class OSGiTestListener implements ITestListener {
         initialBundles.add(bundleContext.installBundle(Paths.get(initialBundlesPath.toString(),
                 "org.eclipse.equinox.simpleconfigurator.jar").toUri().toString()));
 
-        for(Bundle initialBundle : initialBundles){
+        for (Bundle initialBundle : initialBundles) {
             initialBundle.start();
         }
 

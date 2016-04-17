@@ -28,6 +28,6 @@ public class MediatorBundleStartupTest {
     @Test
     public void testBundleStart() throws BundleException {
         mediatorBundle.start();
-        Assert.assertEquals(mediatorBundle.getState(),Bundle.ACTIVE,"Test if the mediator bundle is in Active state");
+        Assert.assertEquals(mediatorBundle.getState(), Bundle.ACTIVE, "Test if the mediator bundle is in Active state");
     }
 }

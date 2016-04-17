@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public class MockBundleWiring implements BundleWiring{
+public class MockBundleWiring implements BundleWiring {
 
     List<BundleCapability> capabilities = new ArrayList<>();
     List<BundleRequirement> requirements = new ArrayList<>();

@@ -22,7 +22,7 @@ public class MockBundleContext implements BundleContext {
 
     Bundle contextBundle = null;
 
-    public MockBundleContext(Bundle bundle){
+    public MockBundleContext(Bundle bundle) {
         this.contextBundle = bundle;
     }
 
@@ -107,7 +107,8 @@ public class MockBundleContext implements BundleContext {
     }
 
     @Override
-    public <S> ServiceRegistration<S> registerService(Class<S> aClass, ServiceFactory<S> serviceFactory, Dictionary<String, ?> dictionary) {
+    public <S> ServiceRegistration<S> registerService(Class<S> aClass, ServiceFactory<S> serviceFactory,
+                                                      Dictionary<String, ?> dictionary) {
         return null;
     }
 
@@ -132,7 +133,8 @@ public class MockBundleContext implements BundleContext {
     }
 
     @Override
-    public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> aClass, String s) throws InvalidSyntaxException {
+    public <S> Collection<ServiceReference<S>> getServiceReferences(Class<S> aClass, String s)
+            throws InvalidSyntaxException {
         return null;
     }
 

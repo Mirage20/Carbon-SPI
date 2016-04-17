@@ -49,18 +49,6 @@ public class ProviderBundle {
 
     }
 
-    public boolean hasServiceType(String className) {
-
-        for (BundleCapability serviceCapability : serviceCapabilities) {
-            String serviceTypeName = serviceCapability.getAttributes()
-                    .get(Constants.SERVICELOADER_NAMESPACE).toString();
-            if (serviceTypeName.equals(className)) {
-                return true;
-            }
-        }
-        return false;
-    }
-
     public boolean requireRegistrar() {
         return requireRegistrar;
     }

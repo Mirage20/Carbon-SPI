@@ -57,8 +57,9 @@ public class CombinedClassLoader extends ClassLoader {
     public InputStream getResourceAsStream(String name) {
         for (ClassLoader bundleClassLoader : bundleClassLoaders) {
             InputStream is = bundleClassLoader.getResourceAsStream(name);
-            if (is != null)
+            if (is != null) {
                 return is;
+            }
         }
         return null;
     }

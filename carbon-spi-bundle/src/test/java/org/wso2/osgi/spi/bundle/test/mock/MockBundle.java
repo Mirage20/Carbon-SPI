@@ -158,7 +158,7 @@ public class MockBundle implements Bundle {
 
     @Override
     public <A> A adapt(Class<A> aClass) {
-        return (A)wiring;
+        return (A) wiring;
     }
 
     @Override

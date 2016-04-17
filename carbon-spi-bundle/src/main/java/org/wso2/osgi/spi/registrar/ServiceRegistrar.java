@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import java.util.Hashtable;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -22,6 +23,10 @@ public class ServiceRegistrar {
     private static final Logger log = LoggerFactory.getLogger(ServiceRegistrar.class);
     private static Map<ProviderBundle, List<ServiceRegistration>> serviceRegistrations = new ConcurrentHashMap<>();
 
+    /**
+     * Register the OSGi service for the bundle if any.
+     * @param providerBundle The provider bundle which requires the registration.
+     */
     public static void register(ProviderBundle providerBundle) {
         if (!providerBundle.requireRegistrar()) {
             return;
@@ -60,6 +65,7 @@ public class ServiceRegistrar {
         }
     }
 
+    //Register a service provider with a given service type.
     private static void registerServiceProvider(ProviderBundle providerBundle, String serviceType,
                                                 String serviceProvider, Hashtable<String, ?> properties) {
 
@@ -83,19 +89,19 @@ public class ServiceRegistrar {
         }
     }
 
+    // Get the service properties for the registration.
     private static Hashtable<String, ?> getServiceProperties(BundleCapability serviceCapability) {
 
         Hashtable<String, Object> serviceProperties = new Hashtable<>();
         Map<String, Object> capabilityAttributes = serviceCapability.getAttributes();
 
-        for (Map.Entry<String, Object> attribute : capabilityAttributes.entrySet()) {
-            String key = attribute.getKey();
-            if (key.startsWith(".") || key.equals(Constants.SERVICELOADER_NAMESPACE)
-                    || key.equals(Constants.CAPABILITY_REGISTER_DIRECTIVE)) {
-                continue;
-            }
-            serviceProperties.put(key, attribute.getValue());
-        }
+        capabilityAttributes.entrySet().stream()
+                .filter((attribute) -> {
+                    String key = attribute.getKey();
+                    return !(key.startsWith(".") || key.equals(Constants.SERVICELOADER_NAMESPACE)
+                            || key.equals(Constants.CAPABILITY_REGISTER_DIRECTIVE));
+                })
+                .forEach((entry) -> serviceProperties.put(entry.getKey(), entry.getValue()));
 
         serviceProperties.put(Constants.SERVICELOADER_MEDIATOR_PROPERTY,
                 ServiceLoaderActivator.getInstance().getBundleId());
@@ -103,23 +109,25 @@ public class ServiceRegistrar {
         return serviceProperties;
     }
 
+    /**
+     * Unregister the OSGi Services registered for the provider bundle.
+     *
+     * @param providerBundle The provider bundle for the un-registration of the service
+     */
     public static void unregister(ProviderBundle providerBundle) {
-        List<ServiceRegistration> registrations = serviceRegistrations.remove(providerBundle);
-        if (registrations != null) {
-            for (ServiceRegistration registration : registrations) {
-                registration.unregister();
-            }
-        }
+        Optional.ofNullable(serviceRegistrations.remove(providerBundle))
+                .ifPresent((registrations) -> registrations.forEach(ServiceRegistration::unregister));
     }
 
+    /**
+     * Unregister the all OSGi Services registered with the mediator bundle.
+     */
     public static void unregisterAll() {
 
-        for (Map.Entry<ProviderBundle, List<ServiceRegistration>> entry : serviceRegistrations.entrySet()) {
+        serviceRegistrations.entrySet().stream().forEach((entry) -> {
             List<ServiceRegistration> registrations = entry.getValue();
-            for (ServiceRegistration registration : registrations) {
-                registration.unregister();
-            }
-        }
+            registrations.forEach(ServiceRegistration::unregister);
+        });
         serviceRegistrations.clear();
     }
 }

@@ -1,7 +1,6 @@
 package org.wso2.osgi.spi.bundle.test;
 
 
-import org.osgi.framework.BundleContext;
 import org.osgi.framework.wiring.BundleCapability;
 import org.osgi.framework.wiring.BundleRequirement;
 import org.testng.Assert;

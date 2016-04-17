@@ -191,6 +191,12 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
         return null;
     }
 
+    /**
+     * Get the matching service provider bundles for the consumer.
+     *
+     * @param consumerBundle The consumer bundle that requires a service.
+     * @return List of matching provider bundles
+     */
     public List<ProviderBundle> getMatchingProviders(ConsumerBundle consumerBundle) {
 
         List<ProviderBundle> selectedProviders = new ArrayList<>();
@@ -210,7 +216,6 @@ public class ServiceBundleTracker<T> extends BundleTracker<T> {
             }
 
         }
-
         return selectedProviders;
     }
 

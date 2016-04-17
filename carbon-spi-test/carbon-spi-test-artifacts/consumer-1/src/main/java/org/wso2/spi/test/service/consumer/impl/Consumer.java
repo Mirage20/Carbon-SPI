@@ -7,13 +7,13 @@ import org.wso2.spi.test.service.api.Codec;
 
 import java.util.ServiceLoader;
 
-public class Consumer implements BundleActivator{
+public class Consumer implements BundleActivator {
 
 
     public void start(BundleContext context) throws Exception {
         System.out.println("Bundle Starting Consumer 1");
-//        ClassLoader cl = Thread.currentThread().getContextClassLoader();
-        ServiceLoader<Codec> ldr = ServiceLoader.load(Codec.class);
+        ClassLoader cl = Thread.currentThread().getContextClassLoader();
+        ServiceLoader<Codec> ldr = ServiceLoader.load(Codec.class, cl);
 
         for (Codec spiObject : ldr) {
             spiObject.play("Hello from Consumer 1");
@@ -24,7 +24,6 @@ public class Consumer implements BundleActivator{
     public void stop(BundleContext context) throws Exception {
         System.out.println("Bundle Stopped Consumer 1");
     }
-
 
 
 }
